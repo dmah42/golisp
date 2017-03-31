@@ -360,6 +360,12 @@ var globalEnv env = env{
 			}
 			return newObject(res), nil
 		}),
+		"null?": newObject(func(o ...object) (object, error) {
+			return newObject(reflect.DeepEqual(o[0], object{})), nil
+		}),
+		"number?": newObject(func(o ...object) (object, error) {
+			return newObject(o[0].t == TYPE_INT || o[0].t == TYPE_FLOAT), nil
+		}),
 		"procedure?": newObject(func(o ...object) (object, error) {
 			if len(o) != 1 {
 				return object{}, errors.New("expected one argument to procedure?")
