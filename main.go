@@ -39,7 +39,7 @@ func eval(e env, o ...object) (object, error) {
 		case "quote":
 			log.Println("-- QUOTE")
 			return x.l[1], nil
-		case "if": 
+		case "if":
 			log.Println("-- IF")
 			test, conseq, alt := x.l[1], x.l[2], x.l[3]
 			// TODO: type check on everything
@@ -123,7 +123,7 @@ func eval(e env, o ...object) (object, error) {
 func removeEmpty(tokens []string) []string {
 	b := tokens[:0]
 	for _, t := range tokens {
-		if len(t) !=  0 {
+		if len(t) != 0 {
 			b = append(b, t)
 		}
 	}
@@ -204,13 +204,19 @@ func repl() error {
 		scanner := bufio.NewScanner(os.Stdin)
 		for scanner.Scan() {
 			in := scanner.Text()
+			var res object
+			var err error
+			if in == "" {
+				goto prompt
+			}
 			log.Printf("executing %q\n", in)
-			res, err := exec(in)
+			res, err = exec(in)
 			if err != nil {
-				fmt.Printf("ERROR: %s\n")
-				continue
+				fmt.Printf("ERROR: %s\n", err)
+				goto prompt
 			}
 			fmt.Printf("%s\n", res.toString())
+		prompt:
 			fmt.Print("golisp> ")
 		}
 		return scanner.Err()
@@ -220,7 +226,7 @@ func repl() error {
 func exec(program string) (object, error) {
 	ast, err := buildAST(program)
 	if err != nil {
-		log.Fatalf("%s while parsing %q\n", err, program)
+		return object{}, fmt.Errorf("%s while parsing %q\n", err, program)
 	}
 
 	log.Printf("ast: %+v\n", ast)
@@ -232,7 +238,7 @@ func main() {
 
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	log.SetOutput(ioutil.Discard)
-	if (*verbose) {
+	if *verbose {
 		log.SetOutput(os.Stdout)
 	}
 

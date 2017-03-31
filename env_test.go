@@ -343,19 +343,19 @@ func TestGlobalEnv(t *testing.T) {
 			wantErr: errors.New("expected two arguments to cons"),
 		},
 		{
-			key: "len",
+			key: "length",
 			args: []object{
 				newObject([]object{newObject("foo"), newObject("bar")}),
 			},
 			want: newObject(2),
 		},
 		{
-			key: "len",
+			key: "length",
 			args: []object{},
 			wantErr: errors.New("expected one argument to len"),
 		},
 		{
-			key: "len",
+			key: "length",
 			args: []object{ newObject("baz")},
 			wantErr: errors.New("expected list as argument to len"),
 		},
@@ -383,6 +383,20 @@ func TestGlobalEnv(t *testing.T) {
 			key: "list?",
 			args: []object{newObject([]object{newObject(42), newObject("foo")})},
 			want: newObject(true),
+		},
+		{
+			key: "map",
+			args: []object{
+				newObject(func(o ...object)(object, error) {
+					return newObject(o[0].i * 2), nil
+				}),
+				newObject([]object{
+					newObject(0), newObject(1), newObject(2),
+				}),
+			},
+			want: newObject([]object{
+				newObject(0), newObject(2), newObject(4),
+			}),
 		},
 		{
 			key: "procedure?",
@@ -422,7 +436,10 @@ func TestGlobalEnv(t *testing.T) {
 	}
 
 	for _, tt := range cases {
-		o := globalEnv.m[tt.key]
+		o, ok := globalEnv.m[tt.key]
+		if !ok {
+			t.Fatalf("key %q not found", tt.key)
+		}
 
 		var got object
 		var err error

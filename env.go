@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"math"
 	"reflect"
 )
@@ -329,6 +330,35 @@ var globalEnv env = env{
 				return object{}, errors.New("expected one argument to list?")
 			}
 			return newObject(o[0].t == TYPE_LIST), nil
+		}),
+		"map": newObject(func(o ...object) (object, error) {
+			fn := o[0]
+			if (fn.t != TYPE_FN && fn.t != TYPE_LAMBDA) {
+				return object{}, errors.New("expected callable for first argument to map")
+			}
+
+			args := o[1]
+			if args.t != TYPE_LIST {
+				return object{}, errors.New("expected list for second argument to map")
+			}
+
+			res := []object{}
+			for _, arg := range args.l {
+				var r object
+				var err error
+				log.Printf("mapping with arg %+v", arg)
+				if fn.t == TYPE_FN {
+					r, err = fn.fn(arg)
+				} else if fn.t == TYPE_LAMBDA {
+					r, err = fn.lambda.call(arg)
+				}
+				if err != nil {
+					return object{}, err
+				}
+
+				res = append(res, r)
+			}
+			return newObject(res), nil
 		}),
 		"procedure?": newObject(func(o ...object) (object, error) {
 			if len(o) != 1 {
