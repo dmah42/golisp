@@ -1,122 +1,20 @@
 package main
 
 import (
+	"bufio"
 	"errors"
+	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
-	"math"
 	"os"
 	"strconv"
 	"strings"
 )
 
-type typ string
-
-const (
-	TYPE_INT typ = "int"
-	TYPE_FLOAT typ = "float"
-	TYPE_SYMBOL typ = "symbol"
-	TYPE_LIST typ = "list"
-	TYPE_FN typ = "fn"
+var (
+	verbose = flag.Bool("verbose", false, "enable to get verbose logging")
 )
-
-type object struct {
-	t typ
-	i int64
-	f float64
-	s string
-	l []object
-	fn func(v ...object) (object, error)
-}
-
-func (o object) ToString() string {
-	switch o.t {
-	case TYPE_INT:
-		return fmt.Sprintf("%d", o.i)
-	case TYPE_FLOAT:
-		return fmt.Sprintf("%f", o.f)
-	case TYPE_SYMBOL:
-		return fmt.Sprintf("%s", o.s)
-	case TYPE_LIST:
-		return fmt.Sprintf("%s", o.l)
-	case TYPE_FN:
-		return fmt.Sprintf("%s", o.fn)
-	default:
-		return "nil"
-	}
-}
-
-type env map[string]object
-
-var globalEnv env = env{
-	"+": object{t: TYPE_FN, fn: func(o ...object) (object, error) {
-		if len(o) != 2 {
-			return object{}, errors.New("expected two arguments to +")
-		}
-		var a float64
-		var ta typ
-		switch o[0].t {
-		case TYPE_FLOAT:
-			a = o[0].f
-			ta = TYPE_FLOAT
-		case TYPE_INT:
-			a = float64(o[0].i)
-			ta = TYPE_INT
-		default:
-			return object{}, fmt.Errorf("cannot add object of type %s", o[0].t)
-		}
-
-		var b float64
-		var tb typ
-		switch o[1].t {
-		case TYPE_FLOAT:
-			b = o[1].f
-			tb = TYPE_FLOAT
-		case TYPE_INT:
-			b = float64(o[1].i)
-			tb = TYPE_INT
-		default:
-			return object{}, fmt.Errorf("cannot add object of type %s", o[1].t)
-		}
-
-		res := a + b
-		if ta == TYPE_INT && tb == TYPE_INT {
-			return object{t: TYPE_INT, i: int64(res)}, nil
-
-		}
-		return object{t: TYPE_FLOAT, f: res}, nil
-	}},
-	"sin": object{t: TYPE_FN, fn: func(o ...object) (object, error) {
-		if len(o) != 1 {
-			return object{}, errors.New("expected one argument to sin")
-		}
-		var f float64
-		if o[0].t == TYPE_FLOAT {
-			f = o[0].f
-		} else if o[0].t == TYPE_INT {
-			f = float64(o[0].i)
-		} else {
-			return object{}, errors.New("expected float or int argument to sin")
-		}
-		return object{t: TYPE_FLOAT, f: math.Sin(f)}, nil
-	}},
-	"list": object{t: TYPE_FN, fn: func(o ...object) (object, error) {
-		if len(o) != 1 {
-			return object{}, errors.New("expected one argument to cos")
-		}
-		return object{t: TYPE_LIST, l: []object{o[0]}}, nil
-	}},
-	"list?": object{t: TYPE_FN, fn: func(o ...object) (object, error) {
-		if len(o) != 1 {
-			return object{}, errors.New("expected one argument to list?")
-		}
-		if o[0].t == TYPE_LIST {
-			return object{t: TYPE_INT, i: 1}, nil
-		} else {
-			return object{t: TYPE_INT, i: 0}, nil
-		}
-	}},
-}
 
 func eval(e env, o ...object) (object, error) {
 	log.Printf("eval called with %+v\n", o)
@@ -125,11 +23,23 @@ func eval(e env, o ...object) (object, error) {
 	log.Printf("checking operand %+v\n", x)
 	switch {
 	case x.t == TYPE_SYMBOL:
-		fmt.Println("SYMBOL")
-		switch o[0].s {
+		log.Println("SYMBOL")
+		log.Printf(".. returning symbol %q from env\n", x.s)
+		v, ok := e[x.s]
+		if !ok {
+			return object{}, fmt.Errorf("symbol %q not found in env\n", x.s)
+		}
+		return v, nil
+	case x.t != TYPE_LIST:
+		log.Println("NOT LIST")
+		log.Printf("-- returning %+v directly\n", x)
+		return x, nil
+	case x.l[0].t == TYPE_BUILTIN:
+		log.Println("BUILTIN")
+		switch x.l[0].s {
 		case "if": 
-			fmt.Println("-- IF")
-			test, conseq, alt := o[1], o[2], o[3]
+			log.Println("-- IF")
+			test, conseq, alt := x.l[1], x.l[2], x.l[3]
 			// TODO: type check on everything
 			res, err := eval(e, test)
 			if err != nil {
@@ -141,22 +51,14 @@ func eval(e env, o ...object) (object, error) {
 			}
 			return eval(e, exp)
 		case "define":
-			fmt.Println("-- DEFINE")
-			v, exp := o[1], o[2]
+			log.Println("-- DEFINE")
+			v, exp := x.l[1], x.l[2]
 			// TODO: type check on v
 			e[v.s], err = eval(e, exp)
-			if err != nil {
-				return object{}, err
-			}
+			return object{}, err
 		default:
-			fmt.Println("-- DEFAULT")
-			log.Printf(".. returning symbol %q from env\n", x.s)
-			return e[x.s], nil
+			return object{}, fmt.Errorf("unknown builtin: %q", x.s)
 		}
-	case x.t != TYPE_LIST:
-		log.Println("NOT LIST")
-		log.Printf("-- returning %+v directly\n", x)
-		return x, nil
 	default:
 		log.Println("LIST")
 		log.Printf("+++ %+v\n", x.l)
@@ -210,13 +112,13 @@ func atom(token string) (object, error) {
 	}
 	valInt, err := strconv.ParseInt(token, 10, 64)
 	if err == nil {
-		return object{t: TYPE_INT, i: valInt}, nil
+		return newObject(valInt), nil
 	}
 	valFloat, err := strconv.ParseFloat(token, 64)
 	if err == nil {
-		return object{t: TYPE_FLOAT, f: valFloat}, nil
+		return newObject(valFloat), nil
 	}
-	return object{t: TYPE_SYMBOL, s: token}, nil
+	return newObject(token), nil
 }
 
 func lex(tokens []string) ([]string, object, error) {
@@ -229,7 +131,7 @@ func lex(tokens []string) ([]string, object, error) {
 	token, tokens = tokens[0], tokens[1:]
 	log.Printf("-- %s .. %#v\n", token, tokens)
 	if token == "(" {
-		l := object{t: TYPE_LIST, l: []object{}}
+		l := newObject([]object{})
 		for len(tokens) != 0 && tokens[0] != ")" {
 			var ls object
 			var err error
@@ -268,19 +170,52 @@ func buildAST(program string) (object, error) {
 	return ast, err
 }
 
-func main() {
-	program := os.Args[1]
+func repl() error {
+	for {
+		fmt.Print("golisp> ")
+		scanner := bufio.NewScanner(os.Stdin)
+		for scanner.Scan() {
+			in := scanner.Text()
+			log.Printf("executing %q\n", in)
+			res, err := exec(in)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("%s\n", res.toString())
+			fmt.Print("golisp> ")
+		}
+		return scanner.Err()
+	}
+}
+
+func exec(program string) (object, error) {
 	ast, err := buildAST(program)
 	if err != nil {
 		log.Fatalf("%s while parsing %q\n", err, program)
 	}
 
 	log.Printf("ast: %+v\n", ast)
+	return eval(globalEnv, ast)
+}
 
-	res, err := eval(globalEnv, ast)
-	log.Printf("%+v %+v\n", res, err)
-	if err != nil {
-		log.Fatalf("%s while evaling %+v\n", err, ast)
+func main() {
+	flag.Parse()
+
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	log.SetOutput(ioutil.Discard)
+	if (*verbose) {
+		log.SetOutput(os.Stdout)
 	}
-	fmt.Printf("%s\n", res.ToString())
+
+	if len(flag.Args()) == 0 {
+		if err := repl(); err != nil {
+			log.Fatalf("%s", err)
+		}
+	}
+
+	res, err := exec(flag.Arg(0))
+	if err != nil {
+		log.Fatalf("%s", err)
+	}
+	fmt.Printf("%s\n", res.toString())
 }
