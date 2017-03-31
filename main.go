@@ -36,6 +36,9 @@ func eval(e env, o ...object) (object, error) {
 	case x.l[0].t == TYPE_BUILTIN:
 		log.Println("BUILTIN")
 		switch x.l[0].s {
+		case "quote":
+			log.Println("-- QUOTE")
+			return newObject(x.l[1:]), nil
 		case "if": 
 			log.Println("-- IF")
 			test, conseq, alt := x.l[1], x.l[2], x.l[3]
@@ -57,8 +60,25 @@ func eval(e env, o ...object) (object, error) {
 			if err != nil {
 				return object{}, err
 			}
+			e.define(v.s, ev)
+			return object{}, err
+		case "set!":
+			log.Println("-- SET")
+			v, exp := x.l[1], x.l[2]
+			ev, err := eval(e, exp)
+			if err != nil {
+				return object{}, err
+			}
 			e.set(v.s, ev)
 			return object{}, err
+		case "lambda":
+			log.Println("-- LAMBDA")
+			params, body := x.l[1], x.l[2]
+			l, err := newLambda(params, body, &e)
+			if err != nil {
+				return object{}, err
+			}
+			return newObject(l), nil
 		default:
 			return object{}, fmt.Errorf("unknown builtin: %q", x.s)
 		}
@@ -75,10 +95,7 @@ func eval(e env, o ...object) (object, error) {
 		if err != nil {
 			return object{}, err
 		}
-		if proc.t != TYPE_FN {
-			return object{}, errors.New("expected function")
-		}
-
+		// Evaluate the arguments.
 		opargs := x.l[1:]
 		args := make([]object, len(opargs))
 		for i := range opargs {
@@ -88,8 +105,16 @@ func eval(e env, o ...object) (object, error) {
 				return object{}, err
 			}
 		}
-		log.Printf("calling function %+v with args %+v", proc.fn, args)
-		return proc.fn(args...)
+		switch proc.t {
+		case TYPE_FN:
+			log.Printf("calling function %+v with args %+v", proc.fn, args)
+			return proc.fn(args...)
+		case TYPE_LAMBDA:
+			log.Printf("calling lambda %+v with args %+v", proc.lambda, args)
+			return proc.lambda.call(args...)
+		default:
+			return object{}, errors.New("expected lambda or fn")
+		}
 	}
 
 	return object{}, fmt.Errorf("unhandled case: %+v", o)

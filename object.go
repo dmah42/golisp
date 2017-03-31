@@ -13,11 +13,15 @@ const (
 	TYPE_LIST typ = "list"
 	TYPE_FN typ = "fn"
 	TYPE_BUILTIN typ = "builtin"
+	TYPE_LAMBDA typ = "lambda"
 )
 
 var builtins = []string {
 	"define",
 	"if",
+	"lambda",
+	"quote",
+	"set!",
 }
 
 type object struct {
@@ -27,6 +31,7 @@ type object struct {
 	s string
 	l []object
 	fn func(...object) (object, error)
+	lambda *lambda
 }
 
 func isBuiltin(s string) bool {
@@ -59,6 +64,8 @@ func newObject(v interface{}) object {
 		return object{t: TYPE_LIST, l: v.([]object)}
 	case func(...object) (object, error):
 		return object{t: TYPE_FN, fn: v.(func(...object) (object, error))}
+	case *lambda:
+		return object{t: TYPE_LAMBDA, lambda: v.(*lambda)}
 	default:
 		return object{}
 	}
