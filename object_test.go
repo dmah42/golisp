@@ -12,6 +12,14 @@ func TestNewObject(t *testing.T) {
 		want object
 	}{
 		{
+			v: false,
+			want: object{t: TYPE_INT, i: 0},
+		},
+		{
+			v: true,
+			want: object{t: TYPE_INT, i: 1},
+		},
+		{
 			v: 42,
 			want: object{t: TYPE_INT, i: 42},
 		},

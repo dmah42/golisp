@@ -51,6 +51,7 @@ func (e *env) set(key string, value object) error {
 var globalEnv env = env{
 	outer: nil,
 	m: map[string]object{
+		// operators
 		"+": newObject(func(o ...object) (object, error) {
 			if len(o) != 2 {
 				return object{}, errors.New("expected two arguments to +")
@@ -154,15 +155,28 @@ var globalEnv env = env{
 				return object{}, err
 			}
 
-			var res int
-			if a > b {
-				res = 1
+			return newObject(a > b), nil
+		}),
+		"<": newObject(func(o ...object) (object, error) {
+			if len(o) != 2 {
+				return object{}, errors.New("expected two arguments to <")
 			}
-			return newObject(res), nil
+
+			a, err := o[0].toFloat()
+			if err != nil {
+				return object{}, err
+			}
+
+			b, err := o[1].toFloat()
+			if err != nil {
+				return object{}, err
+			}
+
+			return newObject(a < b), nil
 		}),
 		">=": newObject(func(o ...object) (object, error) {
 			if len(o) != 2 {
-				return object{}, errors.New("expected two arguments to >")
+				return object{}, errors.New("expected two arguments to >=")
 			}
 
 			a, err := o[0].toFloat()
@@ -175,15 +189,11 @@ var globalEnv env = env{
 				return object{}, err
 			}
 
-			var res int
-			if a >= b {
-				res = 1
-			}
-			return newObject(res), nil
+			return newObject(a >= b), nil
 		}),
 		"<=": newObject(func(o ...object) (object, error) {
 			if len(o) != 2 {
-				return object{}, errors.New("expected two arguments to >")
+				return object{}, errors.New("expected two arguments to <=")
 			}
 
 			a, err := o[0].toFloat()
@@ -196,44 +206,106 @@ var globalEnv env = env{
 				return object{}, err
 			}
 
-			var res int
-			if a <= b {
-				res = 1
+			return newObject(a <= b), nil
+		}),
+		"=": newObject(func(o ...object) (object, error) {
+			if len(o) != 2 {
+				return object{}, errors.New("expected two arguments to =")
 			}
-			return newObject(res), nil
+
+			a, err := o[0].toFloat()
+			if err != nil {
+				return object{}, err
+			}
+
+			b, err := o[1].toFloat()
+			if err != nil {
+				return object{}, err
+			}
+
+			return newObject(a == b), nil
+		}),
+		
+		// math
+		"abs": newObject(func(o ...object) (object, error) {
+			if len(o) != 1 {
+				return object{}, errors.New("expected one argument to abs")
+			}
+			if o[0].t == TYPE_FLOAT {
+				return newObject(math.Abs(o[0].f)), nil
+			} else if o[0].t == TYPE_INT {
+				return newObject(math.Abs(float64(o[0].i))), nil
+			}
+			return object{}, errors.New("expected float or int argument to abs")
 		}),
 		"sin": newObject(func(o ...object) (object, error) {
 			if len(o) != 1 {
 				return object{}, errors.New("expected one argument to sin")
 			}
-			var f float64
 			if o[0].t == TYPE_FLOAT {
-				f = o[0].f
+				return newObject(math.Sin(o[0].f)), nil
 			} else if o[0].t == TYPE_INT {
-				f = float64(o[0].i)
-			} else {
-				return object{}, errors.New("expected float or int argument to sin")
+				return newObject(math.Sin(float64(o[0].i))), nil
 			}
-			return newObject(math.Sin(f)), nil
+			return object{}, errors.New("expected float or int argument to sin")
 		}),
 		"cos": newObject(func(o ...object) (object, error) {
 			if len(o) != 1 {
-				return object{}, errors.New("expected one argument to sin")
+				return object{}, errors.New("expected one argument to cos")
 			}
-			var f float64
 			if o[0].t == TYPE_FLOAT {
-				f = o[0].f
+				return newObject(math.Cos(o[0].f)), nil
 			} else if o[0].t == TYPE_INT {
-				f = float64(o[0].i)
-			} else {
-				return object{}, errors.New("expected float or int argument to sin")
+				return newObject(math.Cos(float64(o[0].i))), nil
 			}
-			return newObject(math.Cos(f)), nil
+			return object{}, errors.New("expected float or int argument to cos")
 		}),
 		"pi": newObject(math.Pi),
+
+		// list manipulation
+		"car":  newObject(func(o ...object) (object, error) {
+			if len(o) != 1 {
+				return object{}, errors.New("expected one argument to car")
+			}
+			x := o[0]
+			if x.t != TYPE_LIST {
+				return object{}, errors.New("expected list as argument to car")
+			}
+			return x.l[0], nil
+		}),
+		"cdr":  newObject(func(o ...object) (object, error) {
+			if len(o) != 1 {
+				return object{}, errors.New("expected one argument to cdr")
+			}
+			x := o[0]
+			if x.t != TYPE_LIST {
+				return object{}, errors.New("expected list as argument to cdr")
+			}
+			return newObject(x.l[1:]), nil
+		}),
+		"cons":  newObject(func(o ...object) (object, error) {
+			if len(o) != 2 {
+				return object{}, errors.New("expected two arguments to cons")
+			}
+			x := o[0]
+			y := o[1]
+			if y.t != TYPE_LIST {
+				return object{}, errors.New("expected list as second argument to cons")
+			}
+			return newObject(append([]object{x}, y.l...)), nil
+		}),
+		"len": newObject(func(o ...object) (object, error) {
+			if len(o) != 1 {
+				return object{}, errors.New("expected one argument to len")
+			}
+			if o[0].t != TYPE_LIST {
+				return object{}, errors.New("expected list as argument to len")
+			}
+			return newObject(len(o[0].l)), nil
+		}),
 		"list": newObject(func(o ...object) (object, error) {
 			if len(o) != 1 {
-				return object{}, errors.New("expected one argument to cos")
+				return object{}, errors.New("expected one argument to list")
 			}
 			return newObject([]object{o[0]}), nil
 		}),
@@ -241,9 +313,18 @@ var globalEnv env = env{
 			if len(o) != 1 {
 				return object{}, errors.New("expected one argument to list?")
 			}
-			if o[0].t == TYPE_LIST {
-				return newObject(1), nil
+			return newObject(o[0].t == TYPE_LIST), nil
+		}),
+		"procedure?": newObject(func(o ...object) (object, error) {
+			if len(o) != 1 {
+				return object{}, errors.New("expected one argument to procedure?")
 			}
-			return newObject(0), nil
+			return newObject(o[0].t == TYPE_FN || o[0].t == TYPE_LAMBDA), nil
+		}),
+		"symbol?": newObject(func(o ...object) (object, error) {
+			if len(o) != 1 {
+				return object{}, errors.New("expected one argument to symbol?")
+			}
+			return newObject(o[0].t == TYPE_SYMBOL), nil
 		}),
 	}}

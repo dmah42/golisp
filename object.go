@@ -45,6 +45,12 @@ func isBuiltin(s string) bool {
 
 func newObject(v interface{}) object {
 	switch v.(type) {
+	case bool:
+		if v.(bool) {
+			return object{t: TYPE_INT, i: 1}
+		} else {
+			return object{t: TYPE_INT, i: 0}
+		}
 	case float64:
 		return object{t: TYPE_FLOAT, f: v.(float64)}
 	case float32:
