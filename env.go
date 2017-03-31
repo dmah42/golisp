@@ -248,6 +248,16 @@ var globalEnv env = env{
 
 			return newObject(math.Pow(f0, f1)), nil
 		}),
+		"sqrt": newObject(func(o ...*object) (*object, error) {
+			f, err := o[0].toFloat()
+			if err != nil {return nil, err}
+			return newObject(math.Sqrt(f)), nil
+		}),
+		"round": newObject(func(o ...*object) (*object, error) {
+			f, err := o[0].toFloat()
+			if err != nil {return nil, err}
+			return newObject(math.Trunc(f)), nil
+		}),
 		"sin": newObject(func(o ...*object) (*object, error) {
 			if len(o) != 1 {
 				return nil, errors.New("expected one argument to sin")
