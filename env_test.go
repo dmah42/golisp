@@ -343,11 +343,6 @@ func TestGlobalEnv(t *testing.T) {
 			wantErr: errors.New("expected two arguments to cons"),
 		},
 		{
-			key: "cons",
-			args: []object{ newObject("baz"), newObject("foo") },
-			wantErr: errors.New("expected list as second argument to cons"),
-		},
-		{
 			key: "len",
 			args: []object{
 				newObject([]object{newObject("foo"), newObject("bar")}),
@@ -366,13 +361,13 @@ func TestGlobalEnv(t *testing.T) {
 		},
 		{
 			key: "list",
-			args: []object{},
-			wantErr: errors.New("expected one argument to list"),
+			args: []object{newObject(42)},
+			want: newObject([]object{newObject(42)}),
 		},
 		{
 			key: "list",
-			args: []object{newObject(42)},
-			want: newObject([]object{newObject(42)}),
+			args: []object{newObject(42), newObject("foo"), newObject(64)},
+			want: newObject([]object{newObject(42), newObject("foo"), newObject(64)}),
 		},
 		{
 			key: "list?",

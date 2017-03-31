@@ -99,3 +99,45 @@ func TestToFloat(t *testing.T) {
 		}
 	}
 }
+
+func TestToString(t *testing.T) {
+	cases := []struct {
+		o object
+		want string
+	}{
+		{
+			o: newObject(42),
+			want: "42",
+		},
+		{
+			o: newObject(42.0),
+			want: fmt.Sprintf("%f", 42.0),
+		},
+		{
+			o: newObject("if"),
+			want: "if",
+		},
+		{
+			o: newObject("foo"),
+			want: "foo",
+		},
+		{
+			o: newObject([]object{newObject(0), newObject(1), newObject(2)}),
+			want: "(0 1 2)",
+		},
+		{
+			o: newObject(func(...object) (object, error) { return object{}, nil}),
+			want: "",
+		},
+		{
+			o: object{},
+			want: "",
+		},
+	}
+
+	for _, tt := range cases {
+		if got := tt.o.toString(); got != tt.want {
+			t.Errorf("got %q, want %q", got, tt.want)
+		}
+	}
+}

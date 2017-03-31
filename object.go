@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 type typ string
@@ -94,14 +95,16 @@ func (o object) toString() string {
 		return fmt.Sprintf("%d", o.i)
 	case TYPE_FLOAT:
 		return fmt.Sprintf("%f", o.f)
-	case TYPE_SYMBOL:
+	case TYPE_SYMBOL, TYPE_BUILTIN:
 		return fmt.Sprintf("%s", o.s)
 	case TYPE_LIST:
-		return fmt.Sprintf("%s", o.l)
-	case TYPE_FN:
-		return fmt.Sprintf("%s", o.fn)
+		ss := []string{}
+		for _, o := range o.l {
+			ss = append(ss, o.toString())
+		}
+		return fmt.Sprintf("(%s)", strings.Join(ss, " "))
 	default:
-		return "nil"
+		return ""
 	}
 }
 

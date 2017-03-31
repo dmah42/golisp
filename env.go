@@ -287,12 +287,11 @@ var globalEnv env = env{
 			if len(o) != 2 {
 				return object{}, errors.New("expected two arguments to cons")
 			}
-			x := o[0]
-			y := o[1]
-			if y.t != TYPE_LIST {
+			if o[1].t != TYPE_LIST {
 				return object{}, errors.New("expected list as second argument to cons")
 			}
-			return newObject(append([]object{x}, y.l...)), nil
+			l := append([]object{o[0]}, o[1].l...)
+			return newObject(l), nil
 		}),
 		"len": newObject(func(o ...object) (object, error) {
 			if len(o) != 1 {
@@ -304,10 +303,7 @@ var globalEnv env = env{
 			return newObject(len(o[0].l)), nil
 		}),
 		"list": newObject(func(o ...object) (object, error) {
-			if len(o) != 1 {
-				return object{}, errors.New("expected one argument to list")
-			}
-			return newObject([]object{o[0]}), nil
+			return newObject(o), nil
 		}),
 		"list?": newObject(func(o ...object) (object, error) {
 			if len(o) != 1 {
