@@ -38,7 +38,7 @@ func eval(e env, o ...object) (object, error) {
 		switch x.l[0].s {
 		case "quote":
 			log.Println("-- QUOTE")
-			return newObject(x.l[1:]), nil
+			return x.l[1], nil
 		case "if": 
 			log.Println("-- IF")
 			test, conseq, alt := x.l[1], x.l[2], x.l[3]

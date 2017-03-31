@@ -239,6 +239,14 @@ var globalEnv env = env{
 			}
 			return object{}, errors.New("expected float or int argument to abs")
 		}),
+		"pow": newObject(func(o ...object) (object, error) {
+			f0, err := o[0].toFloat()
+			if err != nil { return object{}, err }
+			f1, err := o[1].toFloat()
+			if err != nil { return object{}, err }
+
+			return newObject(math.Pow(f0, f1)), nil
+		}),
 		"sin": newObject(func(o ...object) (object, error) {
 			if len(o) != 1 {
 				return object{}, errors.New("expected one argument to sin")
