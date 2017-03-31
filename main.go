@@ -18,16 +18,15 @@ var (
 
 func eval(e env, o ...object) (object, error) {
 	log.Printf("eval called with %+v\n", o)
-	var err error
 	x := o[0]
 	log.Printf("checking operand %+v\n", x)
 	switch {
 	case x.t == TYPE_SYMBOL:
 		log.Println("SYMBOL")
 		log.Printf(".. returning symbol %q from env\n", x.s)
-		v, ok := e[x.s]
-		if !ok {
-			return object{}, fmt.Errorf("symbol %q not found in env\n", x.s)
+		v, err := e.get(x.s)
+		if err != nil {
+			return object{}, err
 		}
 		return v, nil
 	case x.t != TYPE_LIST:
@@ -54,7 +53,11 @@ func eval(e env, o ...object) (object, error) {
 			log.Println("-- DEFINE")
 			v, exp := x.l[1], x.l[2]
 			// TODO: type check on v
-			e[v.s], err = eval(e, exp)
+			ev, err := eval(e, exp)
+			if err != nil {
+				return object{}, err
+			}
+			e.set(v.s, ev)
 			return object{}, err
 		default:
 			return object{}, fmt.Errorf("unknown builtin: %q", x.s)
