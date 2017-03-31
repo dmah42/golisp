@@ -6,13 +6,13 @@ import (
 )
 
 type lambda struct {
-	params object
-	body object
+	params *object
+	body *object
 	outer *env
 }
 
 // TODO: test
-func newLambda(params, body object, env *env) (*lambda, error) {
+func newLambda(params, body *object, env *env) (*lambda, error) {
 	if params.t != TYPE_LIST {
 		return nil, errors.New("invalid params. expected list.")
 	}
@@ -24,14 +24,14 @@ func newLambda(params, body object, env *env) (*lambda, error) {
 	return &lambda{params, body, env}, nil
 }
 
-func (l *lambda) call(args ...object) (object, error) {
+func (l *lambda) call(args ...*object) (*object, error) {
 	if len(args) != len(l.params.l) {
-		return object{}, fmt.Errorf("mismatch number of args %d to params %d.", len(args), len(l.params.l))
+		return nil, fmt.Errorf("mismatch number of args %d to params %d.", len(args), len(l.params.l))
 	}
 
 	e := env{
 		outer: l.outer,
-		m: map[string]object{},
+		m: map[string]*object{},
 	}
 
 	for i, _ := range l.params.l {

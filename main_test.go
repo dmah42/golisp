@@ -53,13 +53,13 @@ func TestTokenize(t *testing.T) {
 func TestAtom(t *testing.T) {
 	cases := []struct {
 		token string
-		want object
+		want *object
 		wantErr error
 	}{
-		{token: "", want: object{}, wantErr: errors.New("unexpected empty token")},
-		{token: "42", want: object{t: TYPE_INT, i: 42}},
-		{token: "42.3", want: object{t: TYPE_FLOAT, f: 42.3}},
-		{token: "answer", want: object{t: TYPE_SYMBOL, s: "answer"}},
+		{token: "", want: nil, wantErr: errors.New("unexpected empty token")},
+		{token: "42", want: &object{t: TYPE_INT, i: 42}},
+		{token: "42.3", want: &object{t: TYPE_FLOAT, f: 42.3}},
+		{token: "answer", want: &object{t: TYPE_SYMBOL, s: "answer"}},
 	}
 
 	for _, tt := range cases {
@@ -77,7 +77,7 @@ func TestLex(t *testing.T) {
 	cases := []struct {
 		name string
 		tokens []string
-		want object
+		want *object
 		wantErr error
 	}{
 		{
@@ -88,7 +88,7 @@ func TestLex(t *testing.T) {
 		{
 			name: "int",
 			tokens: []string{"42"},
-			want: object{t: TYPE_INT, i: 42},
+			want: newObject(42),
 		},
 		{
 			name: "unexpected ')'",
@@ -103,17 +103,15 @@ func TestLex(t *testing.T) {
 		{
 			name: "full",
 			tokens: []string{"(","begin","(","define","r","10",")","r",")"},
-			want: object{
-				t: TYPE_LIST, l: []object{
-					{t: TYPE_SYMBOL, s: "begin"},
-					{t: TYPE_LIST, l: []object{
-						{t: TYPE_BUILTIN, s: "define"},
-						{t: TYPE_SYMBOL, s: "r"},
-						{t: TYPE_INT, i: 10},
-					}},
-					{t: TYPE_SYMBOL, s: "r"},
-				},
-			},
+			want: newObject([]*object{
+				newObject("begin"),
+				newObject([]*object{
+					newObject("define"),
+					newObject("r"),
+					newObject(10),
+				}),
+				newObject("r"),
+			}),
 		},
 	}
 

@@ -16,7 +16,7 @@ var (
 	verbose = flag.Bool("verbose", false, "enable to get verbose logging")
 )
 
-func eval(e env, o ...object) (object, error) {
+func eval(e env, o ...*object) (*object, error) {
 	log.Printf("eval called with %+v\n", o)
 	x := o[0]
 	log.Printf("checking operand %+v\n", x)
@@ -26,7 +26,7 @@ func eval(e env, o ...object) (object, error) {
 		log.Printf(".. returning symbol %q from env\n", x.s)
 		v, err := e.get(x.s)
 		if err != nil {
-			return object{}, err
+			return nil, err
 		}
 		return v, nil
 	case x.t != TYPE_LIST:
@@ -45,7 +45,7 @@ func eval(e env, o ...object) (object, error) {
 			// TODO: type check on everything
 			res, err := eval(e, test)
 			if err != nil {
-				return object{}, err
+				return nil, err
 			}
 			exp := conseq
 			if res.i == 0 {
@@ -58,66 +58,61 @@ func eval(e env, o ...object) (object, error) {
 			// TODO: type check on v
 			ev, err := eval(e, exp)
 			if err != nil {
-				return object{}, err
+				return nil, err
 			}
 			e.define(v.s, ev)
-			return object{}, err
+			return nil, err
 		case "set!":
 			log.Println("-- SET")
 			v, exp := x.l[1], x.l[2]
 			ev, err := eval(e, exp)
 			if err != nil {
-				return object{}, err
+				return nil, err
 			}
 			e.set(v.s, ev)
-			return object{}, err
+			return nil, err
 		case "lambda":
 			log.Println("-- LAMBDA")
 			params, body := x.l[1], x.l[2]
 			l, err := newLambda(params, body, &e)
 			if err != nil {
-				return object{}, err
+				return nil, err
 			}
 			return newObject(l), nil
 		default:
-			return object{}, fmt.Errorf("unknown builtin: %q", x.s)
+			return nil, fmt.Errorf("unknown builtin: %q", x.s)
 		}
 	default:
-		log.Println("LIST")
-		log.Printf("+++ %+v\n", x.l)
+		log.Printf("LIST %+v\n", x.l)
 		if len(x.l) == 0 {
 			log.Printf("returning empty\n")
-			return object{}, nil
+			return nil, nil
 		}
-		log.Printf("-- getting proc for %+v\n", x.l[0])
 		proc, err := eval(e, x.l[0])
 		log.Printf("-- got proc %+v\n", proc)
 		if err != nil {
-			return object{}, err
+			return nil, err
 		}
 		// Evaluate the arguments.
 		opargs := x.l[1:]
-		args := make([]object, len(opargs))
+		args := make([]*object, len(opargs))
 		for i := range opargs {
-			log.Printf("---- evaluating arg %d from %+v\n", i, opargs[i])
 			args[i], err = eval(e, opargs[i])
 			if err != nil {
-				return object{}, err
+				return nil, err
 			}
 		}
 		switch proc.t {
 		case TYPE_FN:
-			log.Printf("calling function %+v with args %+v", proc.fn, args)
 			return proc.fn(args...)
 		case TYPE_LAMBDA:
-			log.Printf("calling lambda %+v with args %+v", proc.lambda, args)
 			return proc.lambda.call(args...)
 		default:
-			return object{}, errors.New("expected lambda or fn")
+			return nil, errors.New("expected lambda or fn")
 		}
 	}
 
-	return object{}, fmt.Errorf("unhandled case: %+v", o)
+	return nil, fmt.Errorf("unhandled case: %+v", o)
 }
 
 func removeEmpty(tokens []string) []string {
@@ -134,9 +129,9 @@ func tokenize(program string) []string {
 	return removeEmpty(strings.Split(strings.Replace(strings.Replace(program, "(", " ( ", -1), ")", " ) ", -1), " "))
 }
 
-func atom(token string) (object, error) {
+func atom(token string) (*object, error) {
 	if token == "" {
-		return object{}, errors.New("unexpected empty token")
+		return nil, errors.New("unexpected empty token")
 	}
 	valInt, err := strconv.ParseInt(token, 10, 64)
 	if err == nil {
@@ -149,30 +144,30 @@ func atom(token string) (object, error) {
 	return newObject(token), nil
 }
 
-func lex(tokens []string) ([]string, object, error) {
+func lex(tokens []string) ([]string, *object, error) {
 	log.Printf("lex called with %#v\n", tokens)
 	if len(tokens) == 0 {
-		return nil, object{}, errors.New("unexpected EOF")
+		return nil, nil, errors.New("unexpected EOF")
 	}
 
 	var token string
 	token, tokens = tokens[0], tokens[1:]
 	log.Printf("-- %s .. %#v\n", token, tokens)
 	if token == "(" {
-		l := newObject([]object{})
+		l := newObject([]*object{})
 		for len(tokens) != 0 && tokens[0] != ")" {
-			var ls object
+			var ls *object
 			var err error
 			tokens, ls, err = lex(tokens)
 			if err != nil {
 				// TODO: maybe return the tokens to this point?
-				return nil, object{}, err
+				return nil, nil, err
 			}
 			log.Printf("---- %#v\n", tokens)
 			l.l = append(l.l, ls)
 		}
 		if len(tokens) == 0 {
-			return nil, object{}, errors.New("unexpected EOF")
+			return nil, nil, errors.New("unexpected EOF")
 		}
 		// Pop off the ")"
 		_, tokens = tokens[0], tokens[1:]
@@ -180,20 +175,20 @@ func lex(tokens []string) ([]string, object, error) {
 	}
 	if token == ")" {
 		// TODO: add the line/column to the error.
-		return nil, object{}, errors.New("unexpected ')'")
+		return nil, nil, errors.New("unexpected ')'")
 	}
 	a, err := atom(token)
 	return tokens, a, err
 }
 
 // Parse a program into an AST.
-func buildAST(program string) (object, error) {
+func buildAST(program string) (*object, error) {
 	tokens := tokenize(program)
 	log.Printf("tokens: %#v\n", tokens)
 
 	tokens, ast, err := lex(tokens)
 	if len(tokens) != 0 {
-		return object{}, errors.New("unexpected leftover tokens")
+		return nil, errors.New("unexpected leftover tokens")
 	}
 	return ast, err
 }
@@ -204,7 +199,7 @@ func repl() error {
 		scanner := bufio.NewScanner(os.Stdin)
 		for scanner.Scan() {
 			in := scanner.Text()
-			var res object
+			var res *object
 			var err error
 			if in == "" {
 				goto prompt
@@ -223,10 +218,10 @@ func repl() error {
 	}
 }
 
-func exec(program string) (object, error) {
+func exec(program string) (*object, error) {
 	ast, err := buildAST(program)
 	if err != nil {
-		return object{}, fmt.Errorf("%s while parsing %q\n", err, program)
+		return nil, fmt.Errorf("%s while parsing %q\n", err, program)
 	}
 
 	log.Printf("ast: %+v\n", ast)

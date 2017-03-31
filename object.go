@@ -30,8 +30,8 @@ type object struct {
 	i int64
 	f float64
 	s string
-	l []object
-	fn func(...object) (object, error)
+	l []*object
+	fn func(...*object) (*object, error)
 	lambda *lambda
 }
 
@@ -44,41 +44,44 @@ func isBuiltin(s string) bool {
 	return false
 }
 
-func newObject(v interface{}) object {
+func newObject(v interface{}) *object {
 	switch v.(type) {
 	case bool:
 		if v.(bool) {
-			return object{t: TYPE_INT, i: 1}
+			return &object{t: TYPE_INT, i: 1}
 		} else {
-			return object{t: TYPE_INT, i: 0}
+			return &object{t: TYPE_INT, i: 0}
 		}
 	case float64:
-		return object{t: TYPE_FLOAT, f: v.(float64)}
+		return &object{t: TYPE_FLOAT, f: v.(float64)}
 	case float32:
-		return object{t: TYPE_FLOAT, f: float64(v.(float32))}
+		return &object{t: TYPE_FLOAT, f: float64(v.(float32))}
 	case int64:
-		return object{t: TYPE_INT, i: v.(int64)}
+		return &object{t: TYPE_INT, i: v.(int64)}
 	case int32:
-		return object{t: TYPE_INT, i: int64(v.(int32))}
+		return &object{t: TYPE_INT, i: int64(v.(int32))}
 	case int:
-		return object{t: TYPE_INT, i: int64(v.(int))}
+		return &object{t: TYPE_INT, i: int64(v.(int))}
 	case string:
 		if isBuiltin(v.(string)) {
-			return object{t: TYPE_BUILTIN, s: v.(string)}
+			return &object{t: TYPE_BUILTIN, s: v.(string)}
 		}
-		return object{t: TYPE_SYMBOL, s: v.(string)}
-	case []object:
-		return object{t: TYPE_LIST, l: v.([]object)}
-	case func(...object) (object, error):
-		return object{t: TYPE_FN, fn: v.(func(...object) (object, error))}
+		return &object{t: TYPE_SYMBOL, s: v.(string)}
+	case []*object:
+		return &object{t: TYPE_LIST, l: v.([]*object)}
+	case func(...*object) (*object, error):
+		return &object{t: TYPE_FN, fn: v.(func(...*object) (*object, error))}
 	case *lambda:
-		return object{t: TYPE_LAMBDA, lambda: v.(*lambda)}
+		return &object{t: TYPE_LAMBDA, lambda: v.(*lambda)}
 	default:
-		return object{}
+		return nil
 	}
 }
 
-func (o object) toFloat() (float64, error) {
+func (o *object) toFloat() (float64, error) {
+	if o == nil {
+		return 0.0, fmt.Errorf("cannot convert nil to float")
+	}
 	switch o.t {
 	case TYPE_FLOAT:
 		return o.f, nil
@@ -89,7 +92,10 @@ func (o object) toFloat() (float64, error) {
 	}
 }
 
-func (o object) toString() string {
+func (o *object) toString() string {
+	if o == nil {
+		return ""
+	}
 	switch o.t {
 	case TYPE_INT:
 		return fmt.Sprintf("%d", o.i)

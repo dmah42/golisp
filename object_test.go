@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"testing"
@@ -9,51 +10,51 @@ import (
 func TestNewObject(t *testing.T) {
 	cases := []struct {
 		v interface{}
-		want object
+		want *object
 	}{
 		{
 			v: false,
-			want: object{t: TYPE_INT, i: 0},
+			want: &object{t: TYPE_INT, i: 0},
 		},
 		{
 			v: true,
-			want: object{t: TYPE_INT, i: 1},
+			want: &object{t: TYPE_INT, i: 1},
 		},
 		{
 			v: 42,
-			want: object{t: TYPE_INT, i: 42},
+			want: &object{t: TYPE_INT, i: 42},
 		},
 		{
 			v: int32(42),
-			want: object{t: TYPE_INT, i: 42},
+			want: &object{t: TYPE_INT, i: 42},
 		},
 		{
 			v: int64(42),
-			want: object{t: TYPE_INT, i: 42},
+			want: &object{t: TYPE_INT, i: 42},
 		},
 		{
 			v: 42.0,
-			want: object{t: TYPE_FLOAT, f: 42.0},
+			want: &object{t: TYPE_FLOAT, f: 42.0},
 		},
 		{
 			v: float32(42.0),
-			want: object{t: TYPE_FLOAT, f: 42.0},
+			want: &object{t: TYPE_FLOAT, f: 42.0},
 		},
 		{
 			v: float64(42.0),
-			want: object{t: TYPE_FLOAT, f: 42.0},
+			want: &object{t: TYPE_FLOAT, f: 42.0},
 		},
 		{
 			v: "foo",
-			want: object{t: TYPE_SYMBOL, s: "foo"},
+			want: &object{t: TYPE_SYMBOL, s: "foo"},
 		},
 		{
 			v: "define",
-			want: object{t: TYPE_BUILTIN, s: "define"},
+			want: &object{t: TYPE_BUILTIN, s: "define"},
 		},
 		{
-			v: []object{newObject(42), newObject("foo")},
-			want: object{t: TYPE_LIST, l: []object{newObject(42), newObject("foo")}},
+			v: []*object{newObject(42), newObject("foo")},
+			want: &object{t: TYPE_LIST, l: []*object{newObject(42), newObject("foo")}},
 		},
 	}
 
@@ -67,13 +68,13 @@ func TestNewObject(t *testing.T) {
 
 func TestToFloat(t *testing.T) {
 	cases := []struct {
-		o object
+		o *object
 		want float64
 		wantErr error
 	}{
 		{
 			o: newObject(nil),
-			wantErr: fmt.Errorf("cannot convert %q to float", ""),
+			wantErr: errors.New("cannot convert nil to float"),
 		},
 		{
 			o: newObject(42.0),
@@ -102,7 +103,7 @@ func TestToFloat(t *testing.T) {
 
 func TestToString(t *testing.T) {
 	cases := []struct {
-		o object
+		o *object
 		want string
 	}{
 		{
@@ -122,15 +123,15 @@ func TestToString(t *testing.T) {
 			want: "foo",
 		},
 		{
-			o: newObject([]object{newObject(0), newObject(1), newObject(2)}),
+			o: newObject([]*object{newObject(0), newObject(1), newObject(2)}),
 			want: "(0 1 2)",
 		},
 		{
-			o: newObject(func(...object) (object, error) { return object{}, nil}),
+			o: newObject(func(...*object) (*object, error) { return nil, nil}),
 			want: "",
 		},
 		{
-			o: object{},
+			o: nil,
 			want: "",
 		},
 	}
