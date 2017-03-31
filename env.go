@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"reflect"
 )
 
 type env struct {
@@ -262,6 +263,10 @@ var globalEnv env = env{
 		}),
 		"pi": newObject(math.Pi),
 
+		"begin": newObject(func(o ...object) (object, error) {
+			return newObject(o), nil
+		}),
+
 		// list manipulation
 		"car":  newObject(func(o ...object) (object, error) {
 			if len(o) != 1 {
@@ -293,7 +298,13 @@ var globalEnv env = env{
 			l := append([]object{o[0]}, o[1].l...)
 			return newObject(l), nil
 		}),
-		"len": newObject(func(o ...object) (object, error) {
+		"eq?": newObject(func(o ...object) (object, error) {
+			return newObject(&o[0] == &o[1]), nil
+		}),
+		"equal?": newObject(func(o ...object) (object, error) {
+			return newObject(reflect.DeepEqual(o[0], o[1])), nil
+		}),
+		"length": newObject(func(o ...object) (object, error) {
 			if len(o) != 1 {
 				return object{}, errors.New("expected one argument to len")
 			}

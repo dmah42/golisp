@@ -207,7 +207,8 @@ func repl() error {
 			log.Printf("executing %q\n", in)
 			res, err := exec(in)
 			if err != nil {
-				return err
+				fmt.Printf("ERROR: %s\n")
+				continue
 			}
 			fmt.Printf("%s\n", res.toString())
 			fmt.Print("golisp> ")
