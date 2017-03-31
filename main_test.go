@@ -107,7 +107,7 @@ func TestLex(t *testing.T) {
 				t: TYPE_LIST, l: []object{
 					{t: TYPE_SYMBOL, s: "begin"},
 					{t: TYPE_LIST, l: []object{
-						{t: TYPE_SYMBOL, s: "define"},
+						{t: TYPE_BUILTIN, s: "define"},
 						{t: TYPE_SYMBOL, s: "r"},
 						{t: TYPE_INT, i: 10},
 					}},
