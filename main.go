@@ -105,8 +105,6 @@ func eval(e env, o ...*object) (*object, error) {
 			return nil, errors.New("expected lambda or fn")
 		}
 	}
-
-	return nil, fmt.Errorf("unhandled case: %+v", o)
 }
 
 func removeEmpty(tokens []string) []string {

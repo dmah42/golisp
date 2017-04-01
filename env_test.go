@@ -46,7 +46,7 @@ func TestGet(t *testing.T) {
 			t.Errorf("got %+v, want %+v", got, tt.want)
 		}
 		if !reflect.DeepEqual(err, tt.wantErr) {
-			t.Errorf("got err %q, want err %q", got, tt.wantErr)
+			t.Errorf("got err %q, want err %q", err, tt.wantErr)
 		}
 	}
 }
@@ -90,7 +90,7 @@ func TestFind(t *testing.T) {
 			t.Errorf("got %+v, want %+v", got, tt.want)
 		}
 		if !reflect.DeepEqual(err, tt.wantErr) {
-			t.Errorf("got err %q, want err %q", got, tt.wantErr)
+			t.Errorf("got err %q, want err %q", err, tt.wantErr)
 		}
 	}
 }
