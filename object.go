@@ -114,3 +114,19 @@ func (o *object) toString() string {
 	}
 }
 
+func (o *object) isTruthy() bool {
+	if o == nil {
+		return false
+	}
+
+	switch o.t {
+	case TYPE_INT:
+		return o.i != 0
+	case TYPE_FLOAT:
+		return o.f != 0.0
+	case TYPE_LIST:
+		return len(o.l) != 0
+	}
+	return true
+}
+

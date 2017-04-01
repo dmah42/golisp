@@ -22,38 +22,34 @@ func eval(e env, o ...*object) (*object, error) {
 	log.Printf("checking operand %+v\n", x)
 	switch {
 	case x.t == TYPE_SYMBOL:
-		log.Println("SYMBOL")
-		log.Printf(".. returning symbol %q from env\n", x.s)
+		log.Printf("SYMBOL %q\n", x.s)
 		v, err := e.get(x.s)
 		if err != nil {
 			return nil, err
 		}
 		return v, nil
 	case x.t != TYPE_LIST:
-		log.Println("NOT LIST")
-		log.Printf("-- returning %+v directly\n", x)
+		log.Printf("CONSTANT %v\n", x)
 		return x, nil
 	case x.l[0].t == TYPE_BUILTIN:
-		log.Println("BUILTIN")
+		log.Printf("BUILTIN %q\n", x.l[0].s)
 		switch x.l[0].s {
 		case "quote":
-			log.Println("-- QUOTE")
 			return x.l[1], nil
 		case "if":
-			log.Println("-- IF")
 			test, conseq, alt := x.l[1], x.l[2], x.l[3]
 			// TODO: type check on everything
 			res, err := eval(e, test)
 			if err != nil {
 				return nil, err
 			}
+			log.Printf("test result: %#v", res)
 			exp := conseq
-			if res.i == 0 {
+			if !res.isTruthy() {
 				exp = alt
 			}
 			return eval(e, exp)
 		case "define":
-			log.Println("-- DEFINE")
 			v, exp := x.l[1], x.l[2]
 			// TODO: type check on v
 			ev, err := eval(e, exp)
@@ -63,7 +59,6 @@ func eval(e env, o ...*object) (*object, error) {
 			e.define(v.s, ev)
 			return nil, err
 		case "set!":
-			log.Println("-- SET")
 			v, exp := x.l[1], x.l[2]
 			ev, err := eval(e, exp)
 			if err != nil {
@@ -72,7 +67,6 @@ func eval(e env, o ...*object) (*object, error) {
 			e.set(v.s, ev)
 			return nil, err
 		case "lambda":
-			log.Println("-- LAMBDA")
 			params, body := x.l[1], x.l[2]
 			l, err := newLambda(params, body, &e)
 			if err != nil {
@@ -210,7 +204,9 @@ func repl() error {
 				fmt.Printf("ERROR: %s\n", err)
 				goto prompt
 			}
-			fmt.Printf("%s\n", res.toString())
+			if res != nil {
+				fmt.Printf("%s\n", res.toString())
+			}
 		prompt:
 			fmt.Print("golisp> ")
 		}
