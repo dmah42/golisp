@@ -1,4 +1,4 @@
-package main
+package golisp
 
 import (
 	"errors"
@@ -101,7 +101,7 @@ func TestToFloat(t *testing.T) {
 	}
 }
 
-func TestToString(t *testing.T) {
+func TestString(t *testing.T) {
 	cases := []struct {
 		o    *object
 		want string
@@ -137,7 +137,7 @@ func TestToString(t *testing.T) {
 	}
 
 	for _, tt := range cases {
-		if got := tt.o.toString(); got != tt.want {
+		if got := tt.o.String(); got != tt.want {
 			t.Errorf("got %q, want %q", got, tt.want)
 		}
 	}

@@ -1,4 +1,4 @@
-package main
+package golisp
 
 import (
 	"fmt"
@@ -92,7 +92,7 @@ func (o *object) toFloat() (float64, error) {
 	}
 }
 
-func (o *object) toString() string {
+func (o *object) String() string {
 	if o == nil {
 		return ""
 	}
@@ -106,7 +106,7 @@ func (o *object) toString() string {
 	case TYPE_LIST:
 		ss := []string{}
 		for _, o := range o.l {
-			ss = append(ss, o.toString())
+			ss = append(ss, o.String())
 		}
 		return fmt.Sprintf("(%s)", strings.Join(ss, " "))
 	default:
