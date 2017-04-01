@@ -1,4 +1,4 @@
-package main 
+package main
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 )
 
 func TestRemoveEmpty(t *testing.T) {
-	cases := []struct{
+	cases := []struct {
 		tokens, want []string
 	}{
 		{},
@@ -18,27 +18,27 @@ func TestRemoveEmpty(t *testing.T) {
 
 	for _, tt := range cases {
 		got := removeEmpty(tt.tokens)
-		if !reflect.DeepEqual(got, tt.want)  {
+		if !reflect.DeepEqual(got, tt.want) {
 			t.Errorf("got %#v, want %#v", got, tt.want)
 		}
 	}
 }
 
 func TestTokenize(t *testing.T) {
-	cases := []struct{
+	cases := []struct {
 		program string
-		want []string
+		want    []string
 	}{
 		{
 			want: []string{},
 		},
 		{
 			program: "",
-			want: []string{},
+			want:    []string{},
 		},
 		{
 			program: "(begin (* pi (* r r)))",
-			want: []string{"(", "begin", "(", "*", "pi", "(", "*", "r", "r", ")", ")", ")"},
+			want:    []string{"(", "begin", "(", "*", "pi", "(", "*", "r", "r", ")", ")", ")"},
 		},
 	}
 
@@ -52,8 +52,8 @@ func TestTokenize(t *testing.T) {
 
 func TestAtom(t *testing.T) {
 	cases := []struct {
-		token string
-		want *object
+		token   string
+		want    *object
 		wantErr error
 	}{
 		{token: "", want: nil, wantErr: errors.New("unexpected empty token")},
@@ -75,34 +75,34 @@ func TestAtom(t *testing.T) {
 
 func TestLex(t *testing.T) {
 	cases := []struct {
-		name string
-		tokens []string
-		want *object
+		name    string
+		tokens  []string
+		want    *object
 		wantErr error
 	}{
 		{
-			name: "eof",
-			tokens: []string{},
+			name:    "eof",
+			tokens:  []string{},
 			wantErr: errors.New("unexpected EOF"),
 		},
 		{
-			name: "int",
+			name:   "int",
 			tokens: []string{"42"},
-			want: newObject(42),
+			want:   newObject(42),
 		},
 		{
-			name: "unexpected ')'",
-			tokens: []string{")"},
+			name:    "unexpected ')'",
+			tokens:  []string{")"},
 			wantErr: errors.New("unexpected ')'"),
 		},
 		{
-			name: "unexpected EOF 2",
+			name:    "unexpected EOF 2",
 			tokens:  []string{"(", "begin", "(", "define", "r", "10", ")", "(", "*", "pi", "(", "*", "r", "r", ")", ")"},
 			wantErr: errors.New("unexpected EOF"),
 		},
 		{
-			name: "full",
-			tokens: []string{"(","begin","(","define","r","10",")","r",")"},
+			name:   "full",
+			tokens: []string{"(", "begin", "(", "define", "r", "10", ")", "r", ")"},
 			want: newObject([]*object{
 				newObject("begin"),
 				newObject([]*object{

@@ -8,16 +8,16 @@ import (
 type typ string
 
 const (
-	TYPE_INT typ = "int"
-	TYPE_FLOAT typ = "float"
-	TYPE_SYMBOL typ = "symbol"
-	TYPE_LIST typ = "list"
-	TYPE_FN typ = "fn"
+	TYPE_INT     typ = "int"
+	TYPE_FLOAT   typ = "float"
+	TYPE_SYMBOL  typ = "symbol"
+	TYPE_LIST    typ = "list"
+	TYPE_FN      typ = "fn"
 	TYPE_BUILTIN typ = "builtin"
-	TYPE_LAMBDA typ = "lambda"
+	TYPE_LAMBDA  typ = "lambda"
 )
 
-var builtins = []string {
+var builtins = []string{
 	"define",
 	"if",
 	"lambda",
@@ -26,12 +26,12 @@ var builtins = []string {
 }
 
 type object struct {
-	t typ
-	i int64
-	f float64
-	s string
-	l []*object
-	fn func(...*object) (*object, error)
+	t      typ
+	i      int64
+	f      float64
+	s      string
+	l      []*object
+	fn     func(...*object) (*object, error)
 	lambda *lambda
 }
 
@@ -129,4 +129,3 @@ func (o *object) isTruthy() bool {
 	}
 	return true
 }
-

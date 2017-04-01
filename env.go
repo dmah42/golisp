@@ -227,7 +227,7 @@ var globalEnv env = env{
 
 			return newObject(a == b), nil
 		}),
-		
+
 		// math
 		"abs": newObject(func(o ...*object) (*object, error) {
 			if len(o) != 1 {
@@ -242,20 +242,28 @@ var globalEnv env = env{
 		}),
 		"pow": newObject(func(o ...*object) (*object, error) {
 			f0, err := o[0].toFloat()
-			if err != nil { return nil, err }
+			if err != nil {
+				return nil, err
+			}
 			f1, err := o[1].toFloat()
-			if err != nil { return nil, err }
+			if err != nil {
+				return nil, err
+			}
 
 			return newObject(math.Pow(f0, f1)), nil
 		}),
 		"sqrt": newObject(func(o ...*object) (*object, error) {
 			f, err := o[0].toFloat()
-			if err != nil {return nil, err}
+			if err != nil {
+				return nil, err
+			}
 			return newObject(math.Sqrt(f)), nil
 		}),
 		"round": newObject(func(o ...*object) (*object, error) {
 			f, err := o[0].toFloat()
-			if err != nil {return nil, err}
+			if err != nil {
+				return nil, err
+			}
 			return newObject(math.Trunc(f)), nil
 		}),
 		"sin": newObject(func(o ...*object) (*object, error) {
@@ -287,7 +295,7 @@ var globalEnv env = env{
 		}),
 
 		// list manipulation
-		"car":  newObject(func(o ...*object) (*object, error) {
+		"car": newObject(func(o ...*object) (*object, error) {
 			if len(o) != 1 {
 				return nil, errors.New("expected one argument to car")
 			}
@@ -297,7 +305,7 @@ var globalEnv env = env{
 			}
 			return x.l[0], nil
 		}),
-		"cdr":  newObject(func(o ...*object) (*object, error) {
+		"cdr": newObject(func(o ...*object) (*object, error) {
 			if len(o) != 1 {
 				return nil, errors.New("expected one argument to cdr")
 			}
@@ -307,7 +315,7 @@ var globalEnv env = env{
 			}
 			return newObject(x.l[1:]), nil
 		}),
-		"cons":  newObject(func(o ...*object) (*object, error) {
+		"cons": newObject(func(o ...*object) (*object, error) {
 			if len(o) != 2 {
 				return nil, errors.New("expected two arguments to cons")
 			}
@@ -343,7 +351,7 @@ var globalEnv env = env{
 		}),
 		"map": newObject(func(o ...*object) (*object, error) {
 			fn := o[0]
-			if (fn.t != TYPE_FN && fn.t != TYPE_LAMBDA) {
+			if fn.t != TYPE_FN && fn.t != TYPE_LAMBDA {
 				return nil, errors.New("expected callable for first argument to map")
 			}
 

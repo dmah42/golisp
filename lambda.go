@@ -7,8 +7,8 @@ import (
 
 type lambda struct {
 	params *object
-	body *object
-	outer *env
+	body   *object
+	outer  *env
 }
 
 // TODO: test
@@ -31,7 +31,7 @@ func (l *lambda) call(args ...*object) (*object, error) {
 
 	e := env{
 		outer: l.outer,
-		m: map[string]*object{},
+		m:     map[string]*object{},
 	}
 
 	for i, _ := range l.params.l {

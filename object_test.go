@@ -9,51 +9,51 @@ import (
 
 func TestNewObject(t *testing.T) {
 	cases := []struct {
-		v interface{}
+		v    interface{}
 		want *object
 	}{
 		{
-			v: false,
+			v:    false,
 			want: &object{t: TYPE_INT, i: 0},
 		},
 		{
-			v: true,
+			v:    true,
 			want: &object{t: TYPE_INT, i: 1},
 		},
 		{
-			v: 42,
+			v:    42,
 			want: &object{t: TYPE_INT, i: 42},
 		},
 		{
-			v: int32(42),
+			v:    int32(42),
 			want: &object{t: TYPE_INT, i: 42},
 		},
 		{
-			v: int64(42),
+			v:    int64(42),
 			want: &object{t: TYPE_INT, i: 42},
 		},
 		{
-			v: 42.0,
+			v:    42.0,
 			want: &object{t: TYPE_FLOAT, f: 42.0},
 		},
 		{
-			v: float32(42.0),
+			v:    float32(42.0),
 			want: &object{t: TYPE_FLOAT, f: 42.0},
 		},
 		{
-			v: float64(42.0),
+			v:    float64(42.0),
 			want: &object{t: TYPE_FLOAT, f: 42.0},
 		},
 		{
-			v: "foo",
+			v:    "foo",
 			want: &object{t: TYPE_SYMBOL, s: "foo"},
 		},
 		{
-			v: "define",
+			v:    "define",
 			want: &object{t: TYPE_BUILTIN, s: "define"},
 		},
 		{
-			v: []*object{newObject(42), newObject("foo")},
+			v:    []*object{newObject(42), newObject("foo")},
 			want: &object{t: TYPE_LIST, l: []*object{newObject(42), newObject("foo")}},
 		},
 	}
@@ -68,24 +68,24 @@ func TestNewObject(t *testing.T) {
 
 func TestToFloat(t *testing.T) {
 	cases := []struct {
-		o *object
-		want float64
+		o       *object
+		want    float64
 		wantErr error
 	}{
 		{
-			o: newObject(nil),
+			o:       newObject(nil),
 			wantErr: errors.New("cannot convert nil to float"),
 		},
 		{
-			o: newObject(42.0),
+			o:    newObject(42.0),
 			want: 42.0,
 		},
 		{
-			o: newObject(42),
+			o:    newObject(42),
 			want: 42.0,
 		},
 		{
-			o: newObject("42"),
+			o:       newObject("42"),
 			wantErr: fmt.Errorf("cannot convert %q to float", "symbol"),
 		},
 	}
@@ -103,35 +103,35 @@ func TestToFloat(t *testing.T) {
 
 func TestToString(t *testing.T) {
 	cases := []struct {
-		o *object
+		o    *object
 		want string
 	}{
 		{
-			o: newObject(42),
+			o:    newObject(42),
 			want: "42",
 		},
 		{
-			o: newObject(42.0),
+			o:    newObject(42.0),
 			want: fmt.Sprintf("%f", 42.0),
 		},
 		{
-			o: newObject("if"),
+			o:    newObject("if"),
 			want: "if",
 		},
 		{
-			o: newObject("foo"),
+			o:    newObject("foo"),
 			want: "foo",
 		},
 		{
-			o: newObject([]*object{newObject(0), newObject(1), newObject(2)}),
+			o:    newObject([]*object{newObject(0), newObject(1), newObject(2)}),
 			want: "(0 1 2)",
 		},
 		{
-			o: newObject(func(...*object) (*object, error) { return nil, nil}),
+			o:    newObject(func(...*object) (*object, error) { return nil, nil }),
 			want: "",
 		},
 		{
-			o: nil,
+			o:    nil,
 			want: "",
 		},
 	}

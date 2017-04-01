@@ -22,20 +22,20 @@ func TestGet(t *testing.T) {
 	}
 
 	cases := []struct {
-		key string
-		want *object
+		key     string
+		want    *object
 		wantErr error
 	}{
 		{
-			key: "bar",
+			key:  "bar",
 			want: newObject("baz"),
 		},
 		{
-			key: "foo",
+			key:  "foo",
 			want: newObject("foo"),
 		},
 		{
-			key: "baz",
+			key:     "baz",
 			wantErr: fmt.Errorf("%q not found", "baz"),
 		},
 	}
@@ -53,11 +53,11 @@ func TestGet(t *testing.T) {
 
 func TestFind(t *testing.T) {
 	outer := &env{
-			m: map[string]*object{
-				"foo": newObject("foo"),
-				"bar": newObject("bar"),
-			},
-		}
+		m: map[string]*object{
+			"foo": newObject("foo"),
+			"bar": newObject("bar"),
+		},
+	}
 	e := &env{
 		outer: outer,
 		m: map[string]*object{
@@ -66,20 +66,20 @@ func TestFind(t *testing.T) {
 	}
 
 	cases := []struct {
-		key string
-		want *env
+		key     string
+		want    *env
 		wantErr error
 	}{
 		{
-			key: "bar",
+			key:  "bar",
 			want: e,
 		},
 		{
-			key: "foo",
+			key:  "foo",
 			want: outer,
 		},
 		{
-			key: "baz",
+			key:     "baz",
 			wantErr: fmt.Errorf("%q not found", "baz"),
 		},
 	}
@@ -97,228 +97,228 @@ func TestFind(t *testing.T) {
 
 func TestGlobalEnv(t *testing.T) {
 	cases := []struct {
-		key string
-		args []*object
-		want *object
+		key     string
+		args    []*object
+		want    *object
 		wantErr error
 	}{
 		{
-			key: "+",
-			args: []*object{ newObject(4), newObject(2) },
+			key:  "+",
+			args: []*object{newObject(4), newObject(2)},
 			want: newObject(6),
 		},
 		{
-			key: "+",
-			args: []*object{ newObject(4)},
+			key:     "+",
+			args:    []*object{newObject(4)},
 			wantErr: errors.New("expected two arguments to +"),
 		},
 		{
-			key: "-",
-			args: []*object{ newObject(4), newObject(2) },
+			key:  "-",
+			args: []*object{newObject(4), newObject(2)},
 			want: newObject(2),
 		},
 		{
-			key: "-",
-			args: []*object{ newObject(4)},
+			key:     "-",
+			args:    []*object{newObject(4)},
 			wantErr: errors.New("expected two arguments to -"),
 		},
 		{
-			key: "*",
-			args: []*object{ newObject(4), newObject(2) },
+			key:  "*",
+			args: []*object{newObject(4), newObject(2)},
 			want: newObject(8),
 		},
 		{
-			key: "*",
-			args: []*object{ newObject(4)},
+			key:     "*",
+			args:    []*object{newObject(4)},
 			wantErr: errors.New("expected two arguments to *"),
 		},
 		{
-			key: "/",
-			args: []*object{ newObject(4), newObject(2) },
+			key:  "/",
+			args: []*object{newObject(4), newObject(2)},
 			want: newObject(2),
 		},
 		{
-			key: "/",
-			args: []*object{ newObject(4)},
+			key:     "/",
+			args:    []*object{newObject(4)},
 			wantErr: errors.New("expected two arguments to /"),
 		},
 		{
-			key: ">",
+			key:  ">",
 			args: []*object{newObject(4), newObject(2)},
 			want: newObject(true),
 		},
 		{
-			key: ">",
+			key:  ">",
 			args: []*object{newObject(2), newObject(4)},
 			want: newObject(false),
 		},
 		{
-			key: ">",
-			args: []*object{newObject(4)},
+			key:     ">",
+			args:    []*object{newObject(4)},
 			wantErr: errors.New("expected two arguments to >"),
 		},
 		{
-			key: ">=",
+			key:  ">=",
 			args: []*object{newObject(4), newObject(2)},
 			want: newObject(true),
 		},
 		{
-			key: ">=",
+			key:  ">=",
 			args: []*object{newObject(4), newObject(4)},
 			want: newObject(true),
 		},
 		{
-			key: ">=",
+			key:  ">=",
 			args: []*object{newObject(2), newObject(4)},
 			want: newObject(false),
 		},
 		{
-			key: ">=",
-			args: []*object{newObject(4)},
+			key:     ">=",
+			args:    []*object{newObject(4)},
 			wantErr: errors.New("expected two arguments to >="),
 		},
 		{
-			key: "<",
+			key:  "<",
 			args: []*object{newObject(4), newObject(2)},
 			want: newObject(false),
 		},
 		{
-			key: "<",
+			key:  "<",
 			args: []*object{newObject(2), newObject(4)},
 			want: newObject(true),
 		},
 		{
-			key: "<",
-			args: []*object{newObject(4)},
+			key:     "<",
+			args:    []*object{newObject(4)},
 			wantErr: errors.New("expected two arguments to <"),
 		},
 		{
-			key: "<=",
+			key:  "<=",
 			args: []*object{newObject(4), newObject(2)},
 			want: newObject(false),
 		},
 		{
-			key: "<=",
+			key:  "<=",
 			args: []*object{newObject(4), newObject(4)},
 			want: newObject(true),
 		},
 		{
-			key: "<=",
+			key:  "<=",
 			args: []*object{newObject(2), newObject(4)},
 			want: newObject(true),
 		},
 		{
-			key: "<=",
-			args: []*object{newObject(4)},
+			key:     "<=",
+			args:    []*object{newObject(4)},
 			wantErr: errors.New("expected two arguments to <="),
 		},
 		{
-			key: "=",
+			key:  "=",
 			args: []*object{newObject(4), newObject(2)},
 			want: newObject(false),
 		},
 		{
-			key: "=",
+			key:  "=",
 			args: []*object{newObject(4), newObject(4)},
 			want: newObject(true),
 		},
 		{
-			key: "=",
-			args: []*object{newObject(4)},
+			key:     "=",
+			args:    []*object{newObject(4)},
 			wantErr: errors.New("expected two arguments to ="),
 		},
 		{
-			key: "abs",
+			key:  "abs",
 			args: []*object{newObject(-42)},
 			want: newObject(42.0),
 		},
 		{
-			key: "abs",
+			key:  "abs",
 			args: []*object{newObject(-42.0)},
 			want: newObject(42.0),
 		},
 		{
-			key: "abs",
-			args: []*object{newObject("42")},
+			key:     "abs",
+			args:    []*object{newObject("42")},
 			wantErr: errors.New("expected float or int argument to abs"),
 		},
 		{
-			key: "abs",
-			args: []*object{newObject(4), newObject(2)},
+			key:     "abs",
+			args:    []*object{newObject(4), newObject(2)},
 			wantErr: errors.New("expected one argument to abs"),
 		},
 		{
-			key: "sin",
+			key:  "sin",
 			args: []*object{newObject(42)},
 			want: newObject(math.Sin(42.0)),
 		},
 		{
-			key: "sin",
+			key:  "sin",
 			args: []*object{newObject(42.0)},
 			want: newObject(math.Sin(42.0)),
 		},
 		{
-			key: "sin",
-			args: []*object{newObject("42")},
+			key:     "sin",
+			args:    []*object{newObject("42")},
 			wantErr: errors.New("expected float or int argument to sin"),
 		},
 		{
-			key: "sin",
-			args: []*object{newObject(4), newObject(2)},
+			key:     "sin",
+			args:    []*object{newObject(4), newObject(2)},
 			wantErr: errors.New("expected one argument to sin"),
 		},
 		{
-			key: "cos",
+			key:  "cos",
 			args: []*object{newObject(42)},
 			want: newObject(math.Cos(42.0)),
 		},
 		{
-			key: "cos",
+			key:  "cos",
 			args: []*object{newObject(42.0)},
 			want: newObject(math.Cos(42.0)),
 		},
 		{
-			key: "cos",
-			args: []*object{newObject("42")},
+			key:     "cos",
+			args:    []*object{newObject("42")},
 			wantErr: errors.New("expected float or int argument to cos"),
 		},
 		{
-			key: "cos",
-			args: []*object{newObject(4), newObject(2)},
+			key:     "cos",
+			args:    []*object{newObject(4), newObject(2)},
 			wantErr: errors.New("expected one argument to cos"),
 		},
 		{
-			key: "pi",
+			key:  "pi",
 			want: newObject(math.Pi),
 		},
 		{
-			key: "car",
+			key:  "car",
 			args: []*object{newObject([]*object{newObject("foo"), newObject("bar")})},
 			want: newObject("foo"),
 		},
 		{
-			key: "car",
-			args: []*object{newObject(4), newObject(2)},
+			key:     "car",
+			args:    []*object{newObject(4), newObject(2)},
 			wantErr: errors.New("expected one argument to car"),
 		},
 		{
-			key: "car",
-			args: []*object{newObject(4)},
+			key:     "car",
+			args:    []*object{newObject(4)},
 			wantErr: errors.New("expected list as argument to car"),
 		},
 		{
-			key: "cdr",
+			key:  "cdr",
 			args: []*object{newObject([]*object{newObject("foo"), newObject("bar")})},
 			want: newObject([]*object{newObject("bar")}),
 		},
 		{
-			key: "cdr",
-			args: []*object{newObject(4), newObject(2)},
+			key:     "cdr",
+			args:    []*object{newObject(4), newObject(2)},
 			wantErr: errors.New("expected one argument to cdr"),
 		},
 		{
-			key: "cdr",
-			args: []*object{newObject(4)},
+			key:     "cdr",
+			args:    []*object{newObject(4)},
 			wantErr: errors.New("expected list as argument to cdr"),
 		},
 		{
@@ -338,8 +338,8 @@ func TestGlobalEnv(t *testing.T) {
 			want: newObject([]*object{newObject(42), newObject("foo"), newObject("bar")}),
 		},
 		{
-			key: "cons",
-			args: []*object{newObject(4)},
+			key:     "cons",
+			args:    []*object{newObject(4)},
 			wantErr: errors.New("expected two arguments to cons"),
 		},
 		{
@@ -350,44 +350,44 @@ func TestGlobalEnv(t *testing.T) {
 			want: newObject(2),
 		},
 		{
-			key: "length",
-			args: []*object{},
+			key:     "length",
+			args:    []*object{},
 			wantErr: errors.New("expected one argument to len"),
 		},
 		{
-			key: "length",
-			args: []*object{ newObject("baz")},
+			key:     "length",
+			args:    []*object{newObject("baz")},
 			wantErr: errors.New("expected list as argument to len"),
 		},
 		{
-			key: "list",
+			key:  "list",
 			args: []*object{newObject(42)},
 			want: newObject([]*object{newObject(42)}),
 		},
 		{
-			key: "list",
+			key:  "list",
 			args: []*object{newObject(42), newObject("foo"), newObject(64)},
 			want: newObject([]*object{newObject(42), newObject("foo"), newObject(64)}),
 		},
 		{
-			key: "list?",
-			args: []*object{},
+			key:     "list?",
+			args:    []*object{},
 			wantErr: errors.New("expected one argument to list?"),
 		},
 		{
-			key: "list?",
+			key:  "list?",
 			args: []*object{newObject(42)},
 			want: newObject(false),
 		},
 		{
-			key: "list?",
+			key:  "list?",
 			args: []*object{newObject([]*object{newObject(42), newObject("foo")})},
 			want: newObject(true),
 		},
 		{
 			key: "map",
 			args: []*object{
-				newObject(func(o ...*object)(*object, error) {
+				newObject(func(o ...*object) (*object, error) {
 					return newObject(o[0].i * 2), nil
 				}),
 				newObject([]*object{
@@ -399,37 +399,37 @@ func TestGlobalEnv(t *testing.T) {
 			}),
 		},
 		{
-			key: "procedure?",
-			args: []*object{},
+			key:     "procedure?",
+			args:    []*object{},
 			wantErr: errors.New("expected one argument to procedure?"),
 		},
 		{
-			key: "procedure?",
+			key:  "procedure?",
 			args: []*object{newObject(42)},
 			want: newObject(false),
 		},
 		{
-			key: "procedure?",
+			key:  "procedure?",
 			args: []*object{newObject(func(o ...*object) (*object, error) { return nil, nil })},
 			want: newObject(true),
 		},
 		{
-			key: "procedure?",
+			key:  "procedure?",
 			args: []*object{newObject(&lambda{newObject(42), newObject(64), nil})},
 			want: newObject(true),
 		},
 		{
-			key: "symbol?",
-			args: []*object{},
+			key:     "symbol?",
+			args:    []*object{},
 			wantErr: errors.New("expected one argument to symbol?"),
 		},
 		{
-			key: "symbol?",
+			key:  "symbol?",
 			args: []*object{newObject("foo")},
 			want: newObject(true),
 		},
 		{
-			key: "symbol?",
+			key:  "symbol?",
 			args: []*object{newObject(42)},
 			want: newObject(false),
 		},
