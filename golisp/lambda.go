@@ -11,14 +11,16 @@ type lambda struct {
 	outer  *env
 }
 
-// TODO: test
 func newLambda(params, body *object, env *env) (*lambda, error) {
+	if params == nil || body == nil {
+		return nil, errors.New("nil params or body")
+	}
 	if params.t != TYPE_LIST {
 		return nil, errors.New("invalid params. expected list.")
 	}
 	for _, p := range params.l {
 		if p.t != TYPE_SYMBOL {
-			return nil, errors.New("unexpected non-symbolic param")
+			return nil, fmt.Errorf("unexpected non-symbolic param: %s", p)
 		}
 	}
 	return &lambda{params, body, env}, nil
