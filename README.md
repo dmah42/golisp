@@ -10,12 +10,13 @@ Zurich to SFO.
 * lambdas, begin, define, set!, all with proper lexical scoping
 * XX? style checks for various bits and pieces
 * pretty good error handling (though i started getting lazy with argument count checks)
+* test coverage is 60%
 * map, car, cdr, etc
 
 ## Missing things
 * tail-call optimization
 * math functions beyond the obvious
-* test coverage is ~50%
+* test coverage is only ~60%
 * more error handling
 * nicer error messages pointng the user to the issues
 * cursor navigation in the repl
