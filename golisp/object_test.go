@@ -142,3 +142,25 @@ func TestString(t *testing.T) {
 		}
 	}
 }
+
+func TestIsTruthy(t *testing.T) {
+	cases := []struct {
+		o *object
+		want bool
+	}{
+		{},
+		{newObject(42), true },
+		{newObject(0), false},
+		{newObject(42.0), true },
+		{newObject(0.0), false},
+		{newObject([]*object{newObject(42)}), true},
+		{newObject([]*object{}), false},
+		{newObject("foo"), true},
+	}
+
+	for _, tt := range cases {
+		if got := tt.o.isTruthy(); got != tt.want {
+			t.Errorf("got %t, want %t", got, tt.want)
+		}
+	}
+}
