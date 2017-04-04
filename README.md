@@ -23,7 +23,7 @@ Zurich to SFO.
 * brace matching in the repl
 
 ## Examples
-```
+```lisp
 golisp> (define first car)
 golisp> (define rest cdr)
 golisp> (define count (lambda (item L) (if L (+ (equal? item (first L)) (count item (rest L))) 0)))
