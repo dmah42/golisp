@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"./golisp"
+	"github.com/dominichamon/golisp/golisp"
 )
 
 var (
