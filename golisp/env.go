@@ -251,6 +251,18 @@ var globalEnv env = env{
 
 			return newObject(math.Pow(f0, f1)), nil
 		}),
+		"expt": newObject(func(o ...*object) (*object, error) {
+			f0, err := o[0].toFloat()
+			if err != nil {
+				return nil, err
+			}
+			f1, err := o[1].toFloat()
+			if err != nil {
+				return nil, err
+			}
+
+			return newObject(math.Pow(f0, f1)), nil
+		}),
 		"sqrt": newObject(func(o ...*object) (*object, error) {
 			f, err := o[0].toFloat()
 			if err != nil {
