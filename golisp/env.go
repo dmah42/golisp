@@ -55,24 +55,23 @@ var globalEnv env = env{
 	m: map[string]*object{
 		// operators
 		"+": newObject(func(o ...*object) (*object, error) {
-			if len(o) != 2 {
-				return nil, errors.New("expected two arguments to +")
+			if len(o) == 1 {
+				return nil, errors.New("expected at least two arguments to +")
 			}
 
-			a, err := o[0].toFloat()
-			if err != nil {
-				return nil, err
+			var res float64
+			var isint bool
+			for _, v := range o {
+				isint = isint && (v.t == TYPE_INT)
+				f, err := v.toFloat()
+				if err != nil {
+					return nil, err
+				}
+				res += f
 			}
 
-			b, err := o[1].toFloat()
-			if err != nil {
-				return nil, err
-			}
-
-			res := a + b
-			if o[0].t == TYPE_INT && o[1].t == TYPE_INT {
+			if isint {
 				return newObject(int64(res)), nil
-
 			}
 			return newObject(res), nil
 		}),
