@@ -14,13 +14,29 @@ func Repl() error {
 	for {
 		fmt.Print("golisp> ")
 		scanner := bufio.NewScanner(os.Stdin)
+		comment := 0
 		for scanner.Scan() {
-			in := scanner.Text()
 			var res *object
 			var err error
-			if in == "" {
+			in := scanner.Text()
+			if in == "" || in[0] == ';' {
 				goto prompt
 			}
+			if strings.HasPrefix(in, "#|") {
+				comment++
+				continue
+			}
+			if comment > 0 {
+				if strings.HasPrefix(in, "|#") {
+					comment--
+				}
+
+				if comment == 0 {
+					goto prompt
+				}
+				continue
+			}
+
 			log.Printf("executing %q\n", in)
 			res, err = Exec(in)
 			if err != nil {
